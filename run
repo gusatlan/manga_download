@@ -1,13 +1,25 @@
 #!/bin/bash
 
-MANGA_DIR="/media/dockstation/data/mangas"
+#MANGA_DIR="/media/dockstation/data/mangas"
+MANGA_DIR="/tmp/downloads"
+DOWNLOAD_LIST_PATH="/tmp/downloads/downloads.txt"
+DOWNLOAD_FOLDER="/tmp/downloads"
+CUR_DIR=`pwd`
+
 mkdir -p $MANGA_DIR > /dev/null
 
 touch $MANGA_DIR/downloads.txt
 kate $MANGA_DIR/downloads.txt
 
-docker pull dockerregistry:5000/brmanga-img:latest
-docker run -it --rm -v /media/dockstation/mangas:/tmp/downloads -e DOWNLOAD_LIST_PATH=/tmp/downloads/downloads.txt -e DOWNLOAD_FOLDER=/tmp/downloads dockerregistry:5000/brmangas-img:latest
+#docker pull dockerregistry:5000/brmanga-img:latest
+#docker run -it --rm -v $MANGA_DIR:/tmp/downloads -e DOWNLOAD_LIST_PATH=$DOWNLOAD_LIST_PATH -e DOWNLOAD_FOLDER=$DOWNLOAD_FOLDER dockerregistry:5000/brmanga-img:latest
+
+
+cd brmanga
+clear
+poetry run python3 main.py
+cd $CUR_DIR
+
 
 rm $MANGA_DIR/downloads.txt
 

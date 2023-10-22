@@ -1,6 +1,10 @@
 import os
+import shutil
 import time
+from exceptiongroup import catch
 import requests
+from PIL import Image
+from io import BytesIO
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
@@ -73,6 +77,7 @@ def __get_chapter_url(url_manga_root, element_name):
                 .replace("í", "")
                 .replace("i", "")
                 .replace(" ", "")
+                .replace(",", ".")
             )
         )
         .replace(".", "_")
@@ -120,6 +125,44 @@ def __download_images(chapter):
     browser.quit()
 
 
+def __convert_to_pdf(root_path, links_chapter):
+    manga_dir = os.path.join(root_path, links_chapter[0][0])
+    scan_dir = os.scandir(manga_dir)
+
+    order = lambda x: float(x.split(os.sep)[-1].split(".")[0].replace("_", "."))
+
+    for chapter in scan_dir:
+        if chapter.is_dir and "chapter" in chapter.name:
+            chapter_dir = os.scandir(chapter)
+            filenames = []
+            for file in chapter_dir:
+                if file.is_file() and ("jpeg" in file.name.lower() or "jpg" in file.name.lower() or "png" in file.name.lower()):
+                    filenames.append(file.path)
+
+            filenames.sort(key=order)
+            imgs = []
+
+            for file in filenames:
+                img = Image.open(file).convert("RGB")
+                
+
+                if "png" in file:
+                    with BytesIO() as f:
+                        img.save(f, format="JPEG")
+                        f.seek(0)
+                        img = Image.open(f).convert("RGB")
+
+                imgs.append(img)
+
+            chapter_file_name = f"{chapter.path}.pdf"
+            try:
+                imgs[0].save(chapter_file_name, save_all=True, append_images=imgs[1:])
+                print(f"Chapter converted to PDF {chapter_file_name}")
+                shutil.rmtree(chapter.path)
+            except Exception as e:
+                print(e)
+
+
 def process():
     list_path, download_path = __get_env()
     links_root_mangas = __split_manga_name_link(__read_download_manga_list(list_path))
@@ -128,3 +171,4 @@ def process():
     download_list = __extract_full_path(root_path=download_path, links=links_chapters)
 
     [__download_images(item) for item in download_list]
+    __convert_to_pdf(download_path, links_chapters)
