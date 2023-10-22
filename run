@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MANGA_DIR="/media/dockstation/mangas"
+MANGA_DIR="/media/dockstation/data/mangas"
 mkdir -p $MANGA_DIR > /dev/null
 
 touch $MANGA_DIR/downloads.txt
