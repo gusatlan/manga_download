@@ -49,6 +49,11 @@ def __read_download_manga_list(file_path: str):
         for line in file:
             if(line):
                 links.append(line)
+
+    print("--- Download list ---")
+    [print(f"Processing {link}") for link in links]
+    print("----------------------")
+    
     return links
 
 
