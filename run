@@ -9,6 +9,7 @@ CUR_DIR=`pwd`
 mkdir -p $MANGA_DIR > /dev/null
 
 touch $MANGA_DIR/downloads.txt
+cp /media/dockstation/data/mangas/downloads.txt /tmp/downloads/
 kate $MANGA_DIR/downloads.txt
 
 #docker pull dockerregistry:5000/brmanga-img:latest

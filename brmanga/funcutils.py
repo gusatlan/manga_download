@@ -78,6 +78,8 @@ def __get_chapter_url(url_manga_root, element_name):
                 .replace("i", "")
                 .replace(" ", "")
                 .replace(",", ".")
+                .replace("v", "")
+                .replace("V", "")
             )
         )
         .replace(".", "_")
