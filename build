@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker build -t dockerregistry:5000/brmanga-img:1.0 .
+docker build -t dockerregistry:5000/brmanga-img:latest .
+docker push dockerregistry:5000/brmanga-img:1.0
+docker push dockerregistry:5000/brmanga-img:latest
+

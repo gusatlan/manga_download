@@ -22,8 +22,8 @@ def __get_env() -> tuple:
     """ Get env variables """
     
     list_path = os.getenv(key='DOWNLOAD_LIST_PATH',
-                          default='/tmp/downloads.txt')
-    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/tmp/mangas/')
+                          default='/tmp/downloads/downloads.txt')
+    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/tmp/downloads/')
     
     return list_path, download_path
 

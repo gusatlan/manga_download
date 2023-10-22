@@ -1,0 +1,13 @@
+#!/bin/bash
+
+MANGA_DIR="/media/dockstation/mangas"
+mkdir -p $MANGA_DIR > /dev/null
+
+touch $MANGA_DIR/downloads.txt
+kate $MANGA_DIR/downloads.txt
+
+docker pull dockerregistry:5000/brmanga-img:latest
+docker run -it --rm -v /media/dockstation/mangas:/tmp/downloads -e DOWNLOAD_LIST_PATH=/tmp/downloads/downloads.txt -e DOWNLOAD_FOLDER=/tmp/downloads dockerregistry:5000/brmangas-img:latest
+
+rm $MANGA_DIR/downloads.txt
+
