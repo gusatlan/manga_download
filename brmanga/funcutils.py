@@ -123,7 +123,6 @@ def __download_images(chapter):
     for image in images:
         file = image.split("/")[-1]
         full_path_file = os.path.join(save_to, file)
-        print(full_path_file)
 
         with open(full_path_file, "wb") as handler:
             handler.write(requests.get(image).content)
