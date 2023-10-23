@@ -70,29 +70,32 @@ def __split_manga_name_link(links):
 
 
 def __get_chapter_url(url_manga_root, element_name):
-    browser, elem = __get_browser(url_manga_root, element_name)
+    try:
+        browser, elem = __get_browser(url_manga_root, element_name)
 
-    chapters = [(
-        "chapter-{:0>6}".format(
-            float(
-                el.find_element(By.TAG_NAME, "a")
-                .text.lower()
-                .replace("cap", "")
-                .replace("tulo", "")
-                .replace("í", "")
-                .replace("i", "")
-                .replace(" ", "")
-                .replace(",", ".")
-                .replace("v", "")
-                .replace("V", "")
+        chapters = [(
+            "chapter-{:0>6}".format(
+                float(
+                    el.find_element(By.TAG_NAME, "a")
+                    .text.lower()
+                    .replace("cap", "")
+                    .replace("tulo", "")
+                    .replace("í", "")
+                    .replace("i", "")
+                    .replace(" ", "")
+                    .replace(",", ".")
+                    .replace("v", "")
+                    .replace("V", "")
+                )
             )
-        )
-        .replace(".", "_")
-        .replace("_0", ""),
-        el.find_element(By.TAG_NAME, "a").get_attribute("href")) for el in elem.find_elements(By.TAG_NAME, "li")]
-
-    browser.quit()
-    return chapters
+            .replace(".", "_")
+            .replace("_0", ""),
+            el.find_element(By.TAG_NAME, "a").get_attribute("href")) for el in elem.find_elements(By.TAG_NAME, "li")
+        ]
+        browser.quit()
+        return chapters
+    except:
+        return []
 
 
 def __extract_full_path(root_path, links):
@@ -114,21 +117,28 @@ def __extract_full_path(root_path, links):
 def __download_images(chapter):
     """ Download images and save to disk """
     save_to, link = chapter
+    chapter_file_name = f"{save_to}.pdf"
 
-    browser, _ = __get_browser(url=link, element_name=None)
+    if not os.path.exists(chapter_file_name):
+        browser, _ = __get_browser(url=link, element_name=None)
 
-    Select(browser.find_element(By.ID, "modo_leitura")).select_by_value("2")
-    images = [str(image.get_attribute("src")) for image in browser.find_element(By.ID, "images_all").find_elements(By.TAG_NAME, "img")]
+        Select(browser.find_element(By.ID, "modo_leitura")).select_by_value("2")
+        images = [str(image.get_attribute("src")) for image in browser.find_element(By.ID, "images_all").find_elements(By.TAG_NAME, "img")]
 
-    for image in images:
-        file = image.split("/")[-1]
-        full_path_file = os.path.join(save_to, file)
+        for image in images:
+            file = image.split("/")[-1]
+            full_path_file = os.path.join(save_to, file)
 
-        with open(full_path_file, "wb") as handler:
-            handler.write(requests.get(image).content)
-            print(f'Saved {full_path_file}')
-
-    browser.quit()
+            if not os.path.exists(full_path_file):
+                print(f"Image not exist, downloading {full_path_file}")
+                with open(full_path_file, "wb") as handler:
+                    handler.write(requests.get(image).content)
+                    print(f'Saved {full_path_file}')
+            else:
+                print(f"Already downloaded {full_path_file}")
+        browser.quit()
+    else:
+        print(f"Chapter already exists {chapter_file_name}")
 
 
 def __convert_to_pdf(root_path, links_chapter):
@@ -138,7 +148,8 @@ def __convert_to_pdf(root_path, links_chapter):
     order = lambda x: float(x.split(os.sep)[-1].split(".")[0].replace("_", "."))
 
     for chapter in scan_dir:
-        if chapter.is_dir and "chapter" in chapter.name:
+        chapter_file_name = f"{chapter.path}.pdf"
+        if (not os.path.exists(chapter_file_name)) and chapter.is_dir() and "chapter" in chapter.name:
             chapter_dir = os.scandir(chapter)
             filenames = []
             for file in chapter_dir:
@@ -160,7 +171,7 @@ def __convert_to_pdf(root_path, links_chapter):
 
                 imgs.append(img)
 
-            chapter_file_name = f"{chapter.path}.pdf"
+            
             try:
                 imgs[0].save(chapter_file_name, save_all=True, append_images=imgs[1:])
                 print(f"Chapter converted to PDF {chapter_file_name}")
