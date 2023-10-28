@@ -12,8 +12,8 @@ touch $MANGA_DIR/downloads.txt
 cp /media/dockstation/data/mangas/downloads.txt /tmp/downloads/
 kate $MANGA_DIR/downloads.txt
 
-docker pull dockerregistry:5000/brmanga-img:latest
-docker run -it --rm -v $MANGA_DIR:/tmp/downloads -e DOWNLOAD_LIST_PATH=$DOWNLOAD_LIST_PATH -e DOWNLOAD_FOLDER=$DOWNLOAD_FOLDER dockerregistry:5000/brmanga-img:latest
+#docker pull dockerregistry:5000/brmanga-img:latest
+#docker run -it --rm -v $MANGA_DIR:/tmp/downloads -e DOWNLOAD_LIST_PATH=$DOWNLOAD_LIST_PATH -e DOWNLOAD_FOLDER=$DOWNLOAD_FOLDER dockerregistry:5000/brmanga-img:latest
 
 
 cd brmanga

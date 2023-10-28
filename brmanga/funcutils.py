@@ -148,8 +148,7 @@ def __convert_to_pdf(root_path, links_chapter):
     order = lambda x: float(x.split(os.sep)[-1].split(".")[0].replace("_", "."))
 
     for chapter in scan_dir:
-        chapter_file_name = f"{chapter.path}.pdf"
-        if (not os.path.exists(chapter_file_name)) and chapter.is_dir() and "chapter" in chapter.name:
+        if chapter.is_dir() and "chapter" in chapter.name:
             chapter_dir = os.scandir(chapter)
             filenames = []
             for file in chapter_dir:
@@ -173,6 +172,7 @@ def __convert_to_pdf(root_path, links_chapter):
 
             
             try:
+                chapter_file_name = f"{chapter.path}.pdf"
                 imgs[0].save(chapter_file_name, save_all=True, append_images=imgs[1:])
                 print(f"Chapter converted to PDF {chapter_file_name}")
                 shutil.rmtree(chapter.path)
