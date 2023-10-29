@@ -72,10 +72,9 @@ class Manga:
     def build_compiled_chapters(self):
         output_file_name = os.path.join(self.manga_path, "chapter-all.pdf")
         
-        if not os.path.exists(output_file_name):
-            sorting_chapters = self.__convert_chapter_id
-            chapters = sorted(read_list_pdf(self.manga_path), key=sorting_chapters)
-            write_pdf(chapters, output_file_name)
+        sorting_chapters = self.__convert_chapter_id
+        chapters = sorted(read_list_pdf(self.manga_path), key=sorting_chapters)
+        write_pdf(chapters, output_file_name)
 
 
     def __init__(self, url: str, url_suffix: str, root_path: str) -> None:
