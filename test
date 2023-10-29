@@ -1,0 +1,9 @@
+#!/bin/bash
+
+CURDIR=`pwd`
+
+
+cd tests
+python -m unittest *.py
+
+cd $CURDIR

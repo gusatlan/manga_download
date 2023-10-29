@@ -1,8 +1,8 @@
 import unittest
 import sys
-sys.path.append('../')
+sys.path.append('../brmanga')
 
-from brmanga.page import Page
+from page import Page
 
 #https://cdn.plaquiz.xyz/uploads/s/shingeki-no-eroko-san-hen-na-oneesan-wa-danshikousei-to-nakayoku-naritai/1/1.jpg
 #https://cdn.plaquiz.xyz/uploads/s/shingeki-no-eroko-san-hen-na-oneesan-wa-danshikousei-to-nakayoku-naritai/1/3.png

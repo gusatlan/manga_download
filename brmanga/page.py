@@ -16,7 +16,7 @@ class Page:
         return ".jpg" in self.name.lower() or ".jpeg" in self.name.lower()
     
 
-    def download(self, retries: int = 5):
+    def download(self, retries: int = 5) -> Image.Image:
         image = None
 
         try:

@@ -1,9 +1,9 @@
 import unittest
 import sys
 import os
-sys.path.append('../')
+sys.path.append('../brmanga')
 
-from brmanga.chapter import Chapter
+from chapter import Chapter
 
 #https://www.brmangas.net/ler/shingeki-no-eroko-san-hen-na-oneesan-wa-danshikousei-to-nakayoku-naritai-14-5-online/
 #Capítulo 14.5
@@ -95,7 +95,8 @@ class ChapterTest(unittest.TestCase):
 
         filename = chapter.chapter_full_path
         self.assertTrue(os.path.exists(filename))
-        #os.remove(filename)
+        os.remove(filename)
+        os.removedirs(os.path.join(chapter.manga_path))
 
 
 if __name__ == "__main__":

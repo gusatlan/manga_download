@@ -1,14 +1,6 @@
 import os
-import shutil
-import time
-from exceptiongroup import catch
-import requests
-from PIL import Image
-from io import BytesIO
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
-from selenium.webdriver.firefox.options import Options
+from PyPDF2 import PdfReader, PdfWriter
 
 
 def get_driver(url: str = ""):
@@ -19,38 +11,32 @@ def get_driver(url: str = ""):
     return browser
 
 
-def __get_browser(url, element_name):
-    browser = webdriver.Firefox()
-    browser.get(url)
-
-    elem = None
-    if(element_name):
-        elem = browser.find_element(By.CLASS_NAME, element_name)
-
-    return browser, elem
-
-
-def __get_env() -> tuple:
-    """ Get env variables """
+def get_env() -> dict:
     
     list_path = os.getenv(key='DOWNLOAD_LIST_PATH',
-                          default='/tmp/downloads/downloads.txt')
-    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/tmp/downloads/')
+                          default='/media/dockstation/data/mangas/downloads.txt')
+    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/tmp/mangas/')
+    url_suffix = os.getenv(key='URL_SUFFIX', default='-online')
+    list_chapters = os.getenv(key='LIST_CHAPTERS', default='capitulos')
+    read_mode = os.getenv(key='READ_MODE', default='modo_leitura')
+    select_read_mode = os.getenv(key='SELECT_READ_MODE', default='2')
+    tag_image_all = os.getenv(key='IMAGE_ALL', default='images_all')
     
-    return list_path, download_path
-
-
-def __mkdir(path: str, manga_title: str, chapter: str):
-    """ Make directory and return path created """
-
-    full_path = os.path.join(path, manga_title, chapter)
-    os.makedirs(name=full_path, exist_ok=True)
     
-    return full_path
+    
+    return {
+        "download_list": list_path,
+        "download_path": download_path,
+        "url_suffix": url_suffix,
+        "list_chapters": list_chapters,
+        "element_read_mode": read_mode,
+        "select_read_mode": select_read_mode,
+        "tag_image_all": tag_image_all
+    }
 
 
-def __read_download_manga_list(file_path: str):
-    """ Read list of downloads """
+def read_download_manga_list():
+    file_path = get_env()["download_list"]
     
     links = []
     with open(file_path) as file:
@@ -59,141 +45,36 @@ def __read_download_manga_list(file_path: str):
                 links.append(line)
 
     print("--- Download list ---")
-    [print(f"Processing {link}") for link in links]
+    [print(link) for link in links]
     print("----------------------")
     
     return links
 
 
-def __split_manga_name_link(links):
-    """ Split link in mangas name and link"""
-    list_links = []
-
-    for link in links:
-        manga_name = list(filter(lambda x: x != "" and x != "\n" and x != "manga" and x != "https:" and x != "www.brmangas.net", link.split("/")))
-        if(manga_name):
-            list_links.append((manga_name[0].replace("-online", ""), link.replace("\n", "")))
-
-    return list_links
+def read_list_pdf(path: str = "./"):
+    pdfs = []
+    with os.scandir(path) as directory:
+        for file in directory:
+            if ".pdf" in file.name.lower().strip() and "all" not in file.name.lower():
+                pdfs.append(file.path)
+    return sorted(pdfs)
 
 
-def __get_chapter_url(url_manga_root, element_name):
+def write_pdf(pdfs: list, output_file_name: str):
     try:
-        browser, elem = __get_browser(url_manga_root, element_name)
+        pdf_writer = PdfWriter()
 
-        chapters = [(
-            "chapter-{:0>6}".format(
-                float(
-                    el.find_element(By.TAG_NAME, "a")
-                    .text.lower()
-                    .replace("cap", "")
-                    .replace("tulo", "")
-                    .replace("í", "")
-                    .replace("i", "")
-                    .replace(" ", "")
-                    .replace(",", ".")
-                    .replace("v", "")
-                    .replace("V", "")
-                )
-            )
-            .replace(".", "_")
-            .replace("_0", ""),
-            el.find_element(By.TAG_NAME, "a").get_attribute("href")) for el in elem.find_elements(By.TAG_NAME, "li")
-        ]
-        browser.quit()
-        return chapters
-    except:
-        return []
+        for pdf in pdfs:
+            pdf_reader = PdfReader(pdf)
+            num_pages = len(pdf_reader.pages)
 
-
-def __extract_full_path(root_path, links):
-    """ Extract full path """
-    download_list = []
-
-    for manga in links:
-        for chapter in manga[1]:
-            path = __mkdir(
-                path=root_path,
-                manga_title=manga[0],
-                chapter=chapter[0]
-            )
-            download_list.append((path, chapter[1]))
-    
-    return download_list
-
-
-def __download_images(chapter):
-    """ Download images and save to disk """
-    save_to, link = chapter
-    chapter_file_name = f"{save_to}.pdf"
-
-    if not os.path.exists(chapter_file_name):
-        browser, _ = __get_browser(url=link, element_name=None)
-
-        Select(browser.find_element(By.ID, "modo_leitura")).select_by_value("2")
-        images = [str(image.get_attribute("src")) for image in browser.find_element(By.ID, "images_all").find_elements(By.TAG_NAME, "img")]
-
-        for image in images:
-            file = image.split("/")[-1]
-            full_path_file = os.path.join(save_to, file)
-
-            if not os.path.exists(full_path_file):
-                print(f"Image not exist, downloading {full_path_file}")
-                with open(full_path_file, "wb") as handler:
-                    handler.write(requests.get(image).content)
-                    print(f'Saved {full_path_file}')
-            else:
-                print(f"Already downloaded {full_path_file}")
-        browser.quit()
-    else:
-        print(f"Chapter already exists {chapter_file_name}")
-
-
-def __convert_to_pdf(root_path, links_chapter):
-    manga_dir = os.path.join(root_path, links_chapter[0][0])
-    scan_dir = os.scandir(manga_dir)
-
-    order = lambda x: float(x.split(os.sep)[-1].split(".")[0].replace("_", "."))
-
-    for chapter in scan_dir:
-        if chapter.is_dir() and "chapter" in chapter.name:
-            chapter_dir = os.scandir(chapter)
-            filenames = []
-            for file in chapter_dir:
-                if file.is_file() and ("jpeg" in file.name.lower() or "jpg" in file.name.lower() or "png" in file.name.lower()):
-                    filenames.append(file.path)
-
-            filenames.sort(key=order)
-            imgs = []
-
-            for file in filenames:
-                img = Image.open(file).convert("RGB")
-                
-
-                if "png" in file:
-                    with BytesIO() as f:
-                        img.save(f, format="JPEG")
-                        f.seek(0)
-                        img = Image.open(f).convert("RGB")
-
-                imgs.append(img)
-
-            
-            try:
-                chapter_file_name = f"{chapter.path}.pdf"
-                imgs[0].save(chapter_file_name, save_all=True, append_images=imgs[1:])
-                print(f"Chapter converted to PDF {chapter_file_name}")
-                shutil.rmtree(chapter.path)
-            except Exception as e:
-                print(e)
-
-
-def process():
-    list_path, download_path = __get_env()
-    links_root_mangas = __split_manga_name_link(__read_download_manga_list(list_path))
-
-    links_chapters = [(link[0], __get_chapter_url(link[1], "capitulos")) for link in links_root_mangas]
-    download_list = __extract_full_path(root_path=download_path, links=links_chapters)
-
-    [__download_images(item) for item in download_list]
-    __convert_to_pdf(download_path, links_chapters)
+            for page_index in range(num_pages):
+                print(f"Adding page {page_index}/{num_pages}")
+                page = pdf_reader.pages[page_index]
+                pdf_writer.add_page(page)
+        
+        with open(output_file_name, "wb") as out:
+            pdf_writer.write(out)
+        print(f"Saved {output_file_name}")
+    except Exception as e:
+        print(f"Ocurred a error in save compiled chapters {output_file_name}: {e}")
