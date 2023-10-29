@@ -15,7 +15,7 @@ def get_env() -> dict:
     
     list_path = os.getenv(key='DOWNLOAD_LIST_PATH',
                           default='/media/dockstation/data/mangas/downloads.txt')
-    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/tmp/mangas/')
+    download_path = os.getenv(key='DOWNLOAD_FOLDER', default='/media/dockstation/data/mangas')
     url_suffix = os.getenv(key='URL_SUFFIX', default='-online')
     list_chapters = os.getenv(key='LIST_CHAPTERS', default='capitulos')
     read_mode = os.getenv(key='READ_MODE', default='modo_leitura')
