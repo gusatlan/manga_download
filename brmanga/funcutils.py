@@ -4,7 +4,7 @@ from PyPDF2 import PdfReader, PdfWriter
 
 
 def get_driver(url: str = ""):
-    browser = webdriver.Firefox()
+    browser = webdriver.Chrome()
 
     if url:
         browser.get(url)

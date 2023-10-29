@@ -33,7 +33,7 @@ class Manga:
 
             driver.quit()
         except Exception as e:
-            print(f"Ocurred a error on extracting url chapters {self.url}")
+            print(f"Ocurred a error on extracting url chapters {self.url}: {e}")
             urls = []
         
         return urls
@@ -49,7 +49,16 @@ class Manga:
         return chapters
     
 
+    def mkdir(self):
+        path = self.manga_path
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+            print(f"Created directory {path}")
+    
+
     def build(self):
+        self.mkdir()
         [chapter.save_chapter_content() for chapter in self.build_chapters()]
         self.build_compiled_chapters()
     
