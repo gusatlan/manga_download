@@ -48,7 +48,7 @@ def read_download_manga_list():
     [print(link) for link in links]
     print("----------------------")
     
-    return links
+    return set(links)
 
 
 def read_list_pdf(path: str = "./"):
