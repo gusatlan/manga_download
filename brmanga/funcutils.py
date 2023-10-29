@@ -11,6 +11,14 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.firefox.options import Options
 
 
+def get_driver(url: str = ""):
+    browser = webdriver.Firefox()
+
+    if url:
+        browser.get(url)
+    return browser
+
+
 def __get_browser(url, element_name):
     browser = webdriver.Firefox()
     browser.get(url)
